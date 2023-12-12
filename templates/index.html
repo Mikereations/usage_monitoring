@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Machine learning resources portal</h1>
+    <ul>
+    {% for machine in machines%}
+        <li>Machine ID : {{machine.id}}</li>
+        <li>Machine name : {{machine.name}}</li>
+        <li>I.P. : {{machine.ip}}</li>
+        <li>Active since : {{machine.since}}</li>
+        <li>GPU usage : {{machine.gpu_usage}}</li>
+        <li>Active user : {{machine.user}}</li>
+    {% endfor %}
+    </ul>
+</body>
+</html>
