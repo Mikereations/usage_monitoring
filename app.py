@@ -4,64 +4,65 @@ from flask import render_template
 from flask import request
 import sqlite3
 import time
+def create_app():
+    app = Flask(__name__)
 
-app = Flask(__name__)
+    # @app.route('/')
+    # def hello_world():
 
-# @app.route('/')
-# def hello_world():
+    #     return render_template('index.html', )
 
-#     return render_template('index.html', )
+    @app.route('/<name>')
+    def hello_world(name):
+        return f"<p>Hello, {escape(name)}!</p>"
 
-@app.route('/<name>')
-def hello_world(name):
-    return f"<p>Hello, {escape(name)}!</p>"
-
-@app.route('/collect', methods=['POST', 'GET'])
-def login():
-    error = None
-    if request.method == 'POST':
-        name = request.form['machine_name']
-        gpu_usage = request.form['msi_usage']
-        IP = request.form['I.P']
-        user = request.form['user']
-        time = request.form['time']
-        machine = get_machine(IP)
-        if machine :
-            if get_last_session(machine[0]) :
-                if gpu_usage == "0" :
-                    close_sessino(IP)
-            elif gpu_usage != "0" :
-                add_session(machine[0], user, time)
-        else :
-            add_machine(name, IP)
+    @app.route('/collect', methods=['POST', 'GET'])
+    def login():
+        error = None
+        if request.method == 'POST':
+            name = request.form['machine_name']
+            gpu_usage = request.form['msi_usage']
+            IP = request.form['I.P']
+            user = request.form['user']
+            time = request.form['time']
             machine = get_machine(IP)
-            add_session(machine[0], user, time)
-        machine = get_machine(IP)
-        session = get_last_session(machine[0])
-        update_machine(IP, session, 1)
-        add_log(session, gpu_usage, time)
-        return "Good job"
-    else:
-        error = 'Invalid username/password'
-    # the code below is executed if the request method
-    # was GET or the credentials were invalid
-    machines = get_all_machines()
-    ms = []
-    for machine in machines :
-        
-        session  = get_last_session(machine[0])
-        if session :
-            if session[3] ==  0 :
-                machina = {'id': machine[0], 'ip': machine[2], 'name': machine[1] , "gpu_usage": 0, "user": "-", "since": "-"}
+            if machine :
+                if get_last_session(machine[0]) :
+                    if gpu_usage == "0" :
+                        close_sessino(IP)
+                elif gpu_usage != "0" :
+                    add_session(machine[0], user, time)
             else :
-                gpu_usage = session[4]
-                user = session[5]
-                since = session[2]
-                machina = {'id': machine[0], 'ip': machine[2], 'name': machine[1] , "gpu_usage": gpu_usage, "user": user, "since": since}
-        else :
-            machina = {'id': machine[0], 'ip': machine[2], 'name': machine[1] , "gpu_usage": 0, "user": "-", "since": "-"}
-        ms.append(machina)
-    return render_template('index.html', machines=ms,error=error)
+                add_machine(name, IP)
+                machine = get_machine(IP)
+                add_session(machine[0], user, time)
+            machine = get_machine(IP)
+            session = get_last_session(machine[0])
+            update_machine(IP, session, 1)
+            add_log(session, gpu_usage, time)
+            return "Good job"
+        else:
+            error = 'Invalid username/password'
+        # the code below is executed if the request method
+        # was GET or the credentials were invalid
+        machines = get_all_machines()
+        ms = []
+        for machine in machines :
+
+            session  = get_last_session(machine[0])
+            if session :
+                if session[3] ==  0 :
+                    machina = {'id': machine[0], 'ip': machine[2], 'name': machine[1] , "gpu_usage": 0, "user": "-", "since": "-"}
+                else :
+                    gpu_usage = session[4]
+                    user = session[5]
+                    since = session[2]
+                    machina = {'id': machine[0], 'ip': machine[2], 'name': machine[1] , "gpu_usage": gpu_usage, "user": user, "since": since}
+            else :
+                machina = {'id': machine[0], 'ip': machine[2], 'name': machine[1] , "gpu_usage": 0, "user": "-", "since": "-"}
+            ms.append(machina)
+        return render_template('index.html', machines=ms,error=error)
+    return app
 
 def get_machine(IP) :
     connection = sqlite3.connect('machines.db')
